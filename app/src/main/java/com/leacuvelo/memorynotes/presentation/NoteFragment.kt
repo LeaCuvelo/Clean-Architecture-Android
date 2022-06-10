@@ -1,9 +1,9 @@
 package com.leacuvelo.memorynotes.presentation
 
+import android.app.AlertDialog
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -16,8 +16,15 @@ import kotlinx.android.synthetic.main.fragment_note.*
 
 class NoteFragment : Fragment() {
 
+    private var noteId = 0L
     private lateinit var viewModel: NoteViewModel
     private var currentNote = Note("","",0L,0L)
+
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -31,6 +38,13 @@ class NoteFragment : Fragment() {
 
         viewModel = ViewModelProviders.of(this).get(NoteViewModel::class.java)
 
+        arguments?.let {
+            noteId = NoteFragmentArgs.fromBundle(it).noteId
+        }
+
+        if(noteId != 0L){
+            viewModel.getNote(noteId)
+        }
 
         checkButton.setOnClickListener {
             if(titleInput.text.toString() != "" || contentInput.text.toString() != ""){
@@ -60,5 +74,36 @@ class NoteFragment : Fragment() {
                 Toast.makeText(context, "Something went wrong, please try again", Toast.LENGTH_SHORT).show()
             }
         })
+
+        viewModel.currentNote.observe(viewLifecycleOwner, Observer {note ->
+            note?.let {
+                currentNote = it
+                titleInput.setText(it.title, TextView.BufferType.EDITABLE)
+                contentInput.setText(it.content, TextView.BufferType.EDITABLE)
+            }
+        })
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.note_menu, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId){
+            R.id.deleteNote -> {
+                if(context != null && noteId != 0L ){
+                    AlertDialog.Builder(context)
+                        .setTitle("Delete Note")
+                        .setMessage("Are you sure you want to delete this note? ")
+                        .setPositiveButton("Yes"){ dialogInterface, i ->
+                            viewModel.deleteNote(currentNote)
+                        }
+                        .setNegativeButton("Cancel"){dialogInterface, i -> }
+                        .show()
+                }
+            }
+        }
+        return true
     }
 }
