@@ -68,4 +68,8 @@ dependencies {
     implementation "com.google.dagger:dagger-android-support:$daggerVersion"
     kapt "com.google.dagger:dagger-compiler:$daggerVersion"
     kapt "com.google.dagger:dagger-android-processor:$daggerVersion"
+
+    implementation 'com.squareup.okhttp3:okhttp:3.12.12' // this might get upgraded to >= 3.14.x once min SDK is at least 21
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.12.12'
+
 }
